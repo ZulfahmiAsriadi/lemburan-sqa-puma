@@ -1,0 +1,8 @@
+# Local tunnel & temporary files
+public_url.txt
+server_online.log
+start_online.pid
+*.pyc
+__pycache__/
+.DS_Store
+*.lnk

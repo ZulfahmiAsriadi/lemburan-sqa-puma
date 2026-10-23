@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Lemburan SQA PUMA | OvertimePro</title>
+  <meta name="description" content="Sistem Rekapitulasi & Timesheet Lembur Online Tim Admin SQA PUMA (Amin Syahar Hasanuddin, Tiara Syahrani Maulida, Muhiddin).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="icon" type="image/png" href="app_icon.png">
+  <link rel="apple-touch-icon" href="app_icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-wrap">
+            <h1>Overtime<span>Online</span></h1>
+            <span class="brand-badge-tag">SQA PUMA</span>
+          </div>
+          <p class="subtitle">Portal Rekap Kerja Lembur 3 Admin SQA PUMA</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Live Online Sync Indicator with Pulse Dot -->
+        <div class="online-status-badge" id="online-sync-badge" title="Status koneksi server database online">
+          <span class="status-pulse-wrapper">
+            <span class="status-pulse-ring"></span>
+            <span class="status-dot online"></span>
+          </span>
+          <span id="sync-status-text">Tersinkronisasi Online</span>
+        </div>
+
+        <!-- Tombol Aktifkan Notifikasi -->
+        <button id="btn-toggle-notif" class="btn btn-notif" title="Aktifkan Notifikasi saat ada lemburan baru">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span id="notif-btn-text">Notifikasi</span>
+        </button>
+
+        <!-- Tombol Install PWA/APK -->
+        <button id="btn-install-apk" class="btn btn-install" title="Pasang aplikasi di HP Android (APK WebApp)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+          Pasang di HP (APK)
+        </button>
+
+        <!-- Tombol Bagikan Link Online -->
+        <button id="btn-share-link" class="btn btn-share" title="Salin / Lihat Link Akses Online">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          Bagikan Link
+        </button>
+
+        <!-- Switch View: Mode Karyawan (Input) / Mode Reviewer (Atasan) -->
+        <div class="role-switcher">
+          <button id="btn-mode-staff" class="role-btn active" title="Mode untuk staf yang menginput lemburan">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Staff / Pengisi
+          </button>
+          <button id="btn-mode-admin" class="role-btn" title="Mode untuk Anda (Atasan) yang verifikasi & submit status Done">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            Reviewer (Saya)
+          </button>
+        </div>
+
+        <button id="btn-export-excel" class="btn btn-secondary" title="Export Rekap ke Excel/CSV">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export Excel
+        </button>
+
+        <button id="btn-print" class="btn btn-secondary" title="Cetak Dokumen Sheet Resmi">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          Cetak
+        </button>
+
+        <button id="btn-open-form" class="btn btn-primary" title="Buka form input lemburan baru">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Tambah Lemburan
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!-- BANNER PERMINTAAN NOTIFIKASI LEMBURAN BARU -->
+    <div id="notification-permission-banner" class="notification-prompt-banner" style="display: none;">
+      <div class="banner-notif-content">
+        <div class="banner-notif-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </div>
+        <div class="banner-notif-text">
+          <strong>Aktifkan Notifikasi Lemburan SQA PUMA</strong>
+          <span>Dapatkan notifikasi suara & getar di HP saat ada lemburan baru yang diinput.</span>
+        </div>
+      </div>
+      <div class="banner-notif-actions">
+        <button id="btn-banner-allow-notif" class="btn btn-sm btn-banner-allow">Aktifkan Sekarang</button>
+        <button id="btn-banner-dismiss-notif" class="btn-banner-close" title="Tutup">&times;</button>
+      </div>
+    </div>
+
+    <!-- TAB NAVIGATION BAR: 3 ADMIN + RINGKASAN REKAP -->
+    <section class="tab-navigation-container">
+      <div class="tabs-list" role="tablist">
+        <button class="tab-btn" data-admin="amin" id="tab-amin" role="tab">
+          <div class="tab-avatar avatar-amin">AS</div>
+          <div class="tab-text">
+            <div class="tab-title-line">
+              <span class="tab-title">Amin Syahar Hasanuddin</span>
+            </div>
+            <span class="tab-sub" id="badge-tab-amin">0 Jam</span>
+          </div>
+          <span class="tab-active-glow"></span>
+        </button>
+
+        <button class="tab-btn" data-admin="tiara" id="tab-tiara" role="tab">
+          <div class="tab-avatar avatar-tiara">TM</div>
+          <div class="tab-text">
+            <div class="tab-title-line">
+              <span class="tab-title">Tiara Syahrani Maulida</span>
+            </div>
+            <span class="tab-sub" id="badge-tab-tiara">0 Jam</span>
+          </div>
+          <span class="tab-active-glow"></span>
+        </button>
+
+        <button class="tab-btn" data-admin="muhiddin" id="tab-muhiddin" role="tab">
+          <div class="tab-avatar avatar-muhiddin">MH</div>
+          <div class="tab-text">
+            <div class="tab-title-line">
+              <span class="tab-title">Muhiddin</span>
+            </div>
+            <span class="tab-sub" id="badge-tab-muhiddin">0 Jam</span>
+          </div>
+          <span class="tab-active-glow"></span>
+        </button>
+
+        <button class="tab-btn tab-summary" data-admin="summary" id="tab-summary" role="tab">
+          <div class="tab-avatar avatar-summary">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M18 20V10"></path>
+              <path d="M12 20V4"></path>
+              <path d="M6 20v-6"></path>
+            </svg>
+          </div>
+          <div class="tab-text">
+            <div class="tab-title-line">
+              <span class="tab-title">Rekap Semua Admin</span>
+            </div>
+            <span class="tab-sub" id="badge-tab-summary">Total Gabungan</span>
+          </div>
+          <span class="tab-active-glow"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW 1: LEMBAR TIMESHEET ADMIN TUNGGAL (AKTIF) -->
+    <div id="view-single-admin" class="sheet-card">
+      
+      <!-- Bagian Identitas Karyawan (Sleek Info Card) -->
+      <div class="sheet-meta-section">
+        <div class="meta-profile-block">
+          <div class="meta-avatar" id="meta-avatar-badge">MH</div>
+          <div class="meta-details">
+            <div class="meta-name-row">
+              <h2 class="meta-name-text" id="meta-nama">Muhiddin</h2>
+              <span class="badge-role" id="meta-jabatan">OS1</span>
+            </div>
+            <div class="meta-dept-row">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+              </svg>
+              <span id="meta-divisi">Service Quality Assurance PUMA Department</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet-period-box">
+          <div class="period-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <div class="period-text-wrap">
+            <div class="period-label">Bulan / Tahun</div>
+            <div class="period-value" id="meta-periode">Oktober 2026</div>
+          </div>
+          <button id="btn-edit-profil" class="btn-edit-icon" title="Ubah Info Karyawan">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Banner Info Alur Kerja -->
+      <div class="flow-banner">
+        <div class="flow-step">
+          <span class="step-num">1</span>
+          <span><strong>Staf SQA PUMA</strong> input uraian tugas, jam masuk & pulang.</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <span class="step-num">2</span>
+          <span><strong>Sistem</strong> menghitung <strong>Durasi Jam</strong> otomatis.</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-step">
+          <span class="step-num">3</span>
+          <span><strong>Reviewer (Anda)</strong> verifikasi & ubah status menjadi <strong>Done</strong>.</span>
+        </div>
+      </div>
+
+      <!-- Admin Toolbar: Muncul saat Mode Reviewer Aktif -->
+      <div id="admin-quick-bar" class="admin-quick-bar" style="display: none;">
+        <div class="admin-bar-info">
+          <div class="admin-bar-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <span><strong>Mode Reviewer Aktif:</strong> Klik status pada tabel untuk mengubah jadi "Done", atau gunakan tombol aksi cepat di kanan.</span>
+        </div>
+        <button id="btn-approve-all" class="btn btn-sm btn-success">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Tandai Semua "Done" di Tab Ini
+        </button>
+      </div>
+
+      <!-- Mobile View Switcher & Quick Actions -->
+      <div class="mobile-view-toolbar">
+        <div class="view-switch-group">
+          <button id="btn-view-cards" class="view-switch-btn active" title="Tampilan Kartu Khusus HP">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            Mode Kartu HP
+          </button>
+          <button id="btn-view-table" class="view-switch-btn" title="Tampilan Tabel Spreadsheet">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            Tabel Sheet
+          </button>
+        </div>
+        <div class="mobile-total-chip" id="mobile-total-chip-top">
+          Total: <strong id="mobile-top-total-hours">0 Jam</strong>
+        </div>
+      </div>
+
+      <!-- TAMPILAN 1: KARTU KHUSUS MOBILE (Pas dengan layar HP) -->
+      <div class="mobile-cards-container" id="timesheet-mobile-cards">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- TAMPILAN 2: TABEL TIMESHEET (Bisa digeser / tampilan desktop) -->
+      <div class="table-responsive" id="timesheet-table-wrapper">
+        <table class="sheet-table" id="timesheet-table">
+          <thead>
+            <tr>
+              <th width="45" class="text-center">No</th>
+              <th width="200">Hari/Tanggal/Bulan/Tahun</th>
+              <th>Deskripsi Kerjaan</th>
+              <th width="100" class="text-center">Jam Masuk</th>
+              <th width="100" class="text-center">Jam Pulang</th>
+              <th width="85" class="text-center">Durasi</th>
+              <th width="125" class="text-center">status</th>
+              <th width="95" class="text-center th-action">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="timesheet-tbody">
+            <!-- Data baris akan dirender oleh JavaScript -->
+          </tbody>
+          <tfoot>
+            <tr class="footer-total-row">
+              <td colspan="5" class="text-center total-title">Total Jam</td>
+              <td class="text-center total-value" id="footer-total-jam">0</td>
+              <td colspan="2" class="total-status-note" id="footer-status-summary">0 Selesai</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Tombol Input Cepat di bawah tabel -->
+      <div class="sheet-bottom-actions">
+        <button class="btn btn-outline-primary" onclick="openAddModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Tambah Baris Pekerjaan Lembur
+        </button>
+        <span class="sheet-sync-status" id="sheet-sync-text">Tersinkronisasi otomatis ke server pusat</span>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: TAB RINGKASAN REKAPITULASI SEMUA ADMIN SQA PUMA -->
+    <div id="view-summary" class="sheet-card" style="display: none;">
+      <div class="summary-header">
+        <div>
+          <div class="summary-title-row">
+            <h3>Rekapitulasi Lembur Seluruh Admin SQA PUMA</h3>
+            <span class="badge-dept">SQA PUMA</span>
+          </div>
+          <p class="text-muted">Perbandingan jam kerja lembur dan status penyelesaian ketiga admin bulan berjalan.</p>
+        </div>
+        <button class="btn btn-primary" onclick="exportSummaryExcel()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export Rekap Semua Admin
+        </button>
+      </div>
+
+      <!-- KPI Summary Cards with Rich Aesthetics -->
+      <div class="summary-cards-grid">
+        <div class="kpi-box kpi-hours">
+          <div class="kpi-icon-wrap icon-purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">TOTAL KESELURUHAN JAM</span>
+            <strong class="kpi-val" id="summary-grand-hours">0 Jam</strong>
+            <span class="kpi-sub">Akumulasi 3 Admin SQA PUMA</span>
+          </div>
+        </div>
+
+        <div class="kpi-box kpi-done">
+          <div class="kpi-icon-wrap icon-emerald">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">PEKERJAAN SELESAI (DONE)</span>
+            <strong class="kpi-val text-success" id="summary-grand-done">0 Pekerjaan</strong>
+            <span class="kpi-sub">Telah diverifikasi & disetujui</span>
+          </div>
+        </div>
+
+        <div class="kpi-box kpi-pending">
+          <div class="kpi-icon-wrap icon-amber">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">MENUNGGU VERIFIKASI</span>
+            <strong class="kpi-val text-warning" id="summary-grand-pending">0 Pending</strong>
+            <span class="kpi-sub">Perlu dicek oleh Reviewer</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modern Summary Comparison Table -->
+      <div class="table-responsive" style="margin-top: 18px;">
+        <table class="sheet-table" id="table-summary-admin">
+          <thead>
+            <tr>
+              <th width="50" class="text-center">No</th>
+              <th>Nama Admin / Staff</th>
+              <th width="90" class="text-center">Jabatan</th>
+              <th>Divisi / Departemen</th>
+              <th width="120" class="text-center">Jumlah Baris</th>
+              <th width="130" class="text-center">Total Durasi</th>
+              <th width="160" class="text-center">Status Selesai</th>
+              <th width="140" class="text-center">Aksi Cepat</th>
+            </tr>
+          </thead>
+          <tbody id="summary-tbody">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile Cards for Summary -->
+      <div class="mobile-summary-cards" id="summary-mobile-cards">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- BAGIAN DAFTAR TIMESHEET DETAIL REKAP GABUNGAN -->
+      <div class="summary-timesheet-section">
+        <div class="summary-timesheet-header">
+          <div class="summary-ts-title-wrap">
+            <h4 class="summary-ts-title">Timesheet Rekap Lemburan SQA PUMA</h4>
+            <span class="badge-dept" id="badge-total-all-rows">0 Baris Total</span>
+          </div>
+
+          <!-- Filter Admin Selector -->
+          <div class="summary-filter-pills" id="summary-filter-pills">
+            <button class="filter-pill active" data-filter="all">Semua Admin</button>
+            <button class="filter-pill" data-filter="tiara">
+              <span class="pill-dot avatar-tiara"></span> Tiara
+            </button>
+            <button class="filter-pill" data-filter="amin">
+              <span class="pill-dot avatar-amin"></span> Amin
+            </button>
+            <button class="filter-pill" data-filter="muhiddin">
+              <span class="pill-dot avatar-muhiddin"></span> Muhiddin
+            </button>
+          </div>
+        </div>
+
+        <!-- Kartu Mobile Timesheet Gabungan -->
+        <div class="mobile-cards-container" id="summary-combined-mobile-cards">
+          <!-- Rendered by JS -->
+        </div>
+
+        <!-- Tabel Sheet Timesheet Gabungan (Desktop / Tabel Mode) -->
+        <div class="table-responsive" id="summary-combined-table-wrapper">
+          <table class="sheet-table" id="summary-combined-table">
+            <thead>
+              <tr>
+                <th width="45" class="text-center">No</th>
+                <th width="160">Admin / Staff</th>
+                <th width="190">Hari / Tanggal</th>
+                <th>Deskripsi Kerjaan</th>
+                <th width="90" class="text-center">Masuk</th>
+                <th width="90" class="text-center">Pulang</th>
+                <th width="80" class="text-center">Durasi</th>
+                <th width="110" class="text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="summary-combined-tbody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Floating Action Button (FAB) for Mobile -->
+  <button id="mobile-fab-add" class="mobile-fab" onclick="openAddModal()" title="Tambah Lemburan Baru">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    <span>+ Catat Lembur</span>
+  </button>
+
+  <!-- MODAL 1: Form Input Lembur Karyawan -->
+  <div id="modal-lembur" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 id="modal-lembur-title">Input Catatan Lembur</h3>
+          <p class="modal-desc">Isi deskripsi tugas, jam masuk, dan jam pulang. Durasi akan dihitung otomatis.</p>
+        </div>
+        <button class="modal-close" id="btn-close-lembur-modal">&times;</button>
+      </div>
+
+      <form id="form-lembur" class="modal-body">
+        <input type="hidden" id="entry-id">
+
+        <div class="form-group">
+          <label for="select-target-admin">Catat untuk Admin: <span class="required">*</span></label>
+          <select id="select-target-admin" required>
+            <option value="amin">Amin Syahar Hasanuddin</option>
+            <option value="tiara">Tiara Syahrani Maulida</option>
+            <option value="muhiddin">Muhiddin</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="input-tanggal">Hari / Tanggal Lembur <span class="required">*</span></label>
+          <input type="date" id="input-tanggal" required>
+          <span class="form-hint" id="preview-formatted-date">Format: Hari, DD MMMM YYYY</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label for="input-jam-masuk">Jam Masuk <span class="required">*</span></label>
+            <input type="time" id="input-jam-masuk" value="18:00" required>
+          </div>
+          <div class="form-group col-6">
+            <label for="input-jam-pulang">Jam Pulang <span class="required">*</span></label>
+            <input type="time" id="input-jam-pulang" value="22:00" required>
+          </div>
+        </div>
+
+        <!-- Box Kalkulasi Otomatis Durasi Real-Time -->
+        <div class="duration-highlight-box">
+          <div class="dur-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="dur-info">
+            <span class="dur-label">Durasi Terhitung Otomatis:</span>
+            <strong class="dur-number" id="calc-durasi-display">4 Jam</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="input-deskripsi">Deskripsi Kerjaan <span class="required">*</span></label>
+          <textarea id="input-deskripsi" rows="4" placeholder="Contoh: Productivity weekly Report Compared Marsma Week 38 Compared data site UME and REM Collect data Azimuth and territory NDM..." required></textarea>
+        </div>
+
+        <!-- Status Field: Default kosong/Pending untuk staff, atau bisa diset oleh atasan -->
+        <div class="form-group" id="status-field-wrapper">
+          <label for="input-status">Status Pekerjaan</label>
+          <select id="input-status">
+            <option value="">(Kosong / Menunggu Review)</option>
+            <option value="Done">Done</option>
+            <option value="Pending">Pending</option>
+          </select>
+          <small class="form-hint">Jika diisi staf, biarkan kosong atau Pending sampai Anda mereviewnya.</small>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-lembur-modal">Batal</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-lembur">Simpan ke Timesheet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Edit Profil Identitas Karyawan & Periode -->
+  <div id="modal-profil" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>Pengaturan Identitas Karyawan</h3>
+          <p class="modal-desc">Sesuaikan nama, jabatan, divisi, dan bulan rekapitulasi untuk tab ini.</p>
+        </div>
+        <button class="modal-close" id="btn-close-profil-modal">&times;</button>
+      </div>
+
+      <form id="form-profil" class="modal-body">
+        <div class="form-group">
+          <label for="input-profil-nama">Nama Karyawan</label>
+          <input type="text" id="input-profil-nama" required>
+        </div>
+
+        <div class="form-group">
+          <label for="input-profil-jabatan">Jabatan</label>
+          <input type="text" id="input-profil-jabatan" required>
+        </div>
+
+        <div class="form-group">
+          <label for="input-profil-divisi">Divisi / Departemen</label>
+          <input type="text" id="input-profil-divisi" required>
+        </div>
+
+        <div class="form-group">
+          <label for="input-profil-periode">Bulan / Tahun</label>
+          <input type="text" id="input-profil-periode" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-profil-modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Profil</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Bagikan Link Akses Online -->
+  <div id="modal-share" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>Link Akses Online Timesheet SQA PUMA</h3>
+          <p class="modal-desc">Kirimkan link ini ke masing-masing admin agar bisa diakses dari HP atau laptop mana saja.</p>
+        </div>
+        <button class="modal-close" id="btn-close-share-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="share-info-card">
+          <div class="share-row">
+            <span class="share-label">Link Utama (Semua Admin):</span>
+            <div class="copy-input-group">
+              <input type="text" id="share-url-main" readonly>
+              <button class="btn btn-sm btn-primary" onclick="copyShareLink('share-url-main')">Salin</button>
+            </div>
+          </div>
+
+          <div class="share-divider"></div>
+
+          <div class="share-row">
+            <span class="share-label">Link Khusus <strong>Amin Syahar Hasanuddin</strong>:</span>
+            <div class="copy-input-group">
+              <input type="text" id="share-url-amin" readonly>
+              <button class="btn btn-sm btn-secondary" onclick="copyShareLink('share-url-amin')">Salin</button>
+            </div>
+          </div>
+
+          <div class="share-row">
+            <span class="share-label">Link Khusus <strong>Tiara Syahrani Maulida</strong>:</span>
+            <div class="copy-input-group">
+              <input type="text" id="share-url-tiara" readonly>
+              <button class="btn btn-sm btn-secondary" onclick="copyShareLink('share-url-tiara')">Salin</button>
+            </div>
+          </div>
+
+          <div class="share-row">
+            <span class="share-label">Link Khusus <strong>Muhiddin</strong>:</span>
+            <div class="copy-input-group">
+              <input type="text" id="share-url-muhiddin" readonly>
+              <button class="btn btn-sm btn-secondary" onclick="copyShareLink('share-url-muhiddin')">Salin</button>
+            </div>
+          </div>
+        </div>
+        <p class="form-hint text-center">Data tersimpan di server lokal dan otomatis tersinkronisasi antar perangkat.</p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="btn-close-share-btn">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- External Script Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

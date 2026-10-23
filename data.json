@@ -1,0 +1,221 @@
+{
+  "admins": {
+    "muhiddin": {
+      "id": "muhiddin",
+      "nama": "Muhiddin",
+      "jabatan": "OS1",
+      "divisi": "Service Quality Assurance PUMA Department",
+      "periode": "Oktober 2026",
+      "rows": [
+        {
+          "id": 1792745334396,
+          "rawDate": "2026-10-06",
+          "hariTanggal": "Selasa, 6 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly Report Compared Marsma Week 38 Compared data site UME and REM Collect data Azimuth and territory NDM",
+          "status": "Done"
+        },
+        {
+          "id": 1792745347010,
+          "rawDate": "2026-10-07",
+          "hariTanggal": "Rabu, 7 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly Report daily report collect data revenue and payload weekly and monthly level site by request user",
+          "status": "Done"
+        },
+        {
+          "id": 1792745357849,
+          "rawDate": "2026-10-08",
+          "hariTanggal": "Kamis, 8 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly Report Compared Marsma Week 38 , Create Gcell Marsma Mapping KML and KMZ and validate longlate and latitude",
+          "status": "Done"
+        },
+        {
+          "id": 1792745368013,
+          "rawDate": "2026-10-09",
+          "hariTanggal": "Jumat, 9 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly Report Compared Marsma Wekk 38 validate on air date, class revenue, tech, band with ndm cell_name level",
+          "status": "Done"
+        },
+        {
+          "id": 1792745377336,
+          "rawDate": "2026-10-12",
+          "hariTanggal": "Senin, 12 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly Report Compared Marsma Wekk 38 validate class revenue, Anthena Type, and Create Weekly Report W41 PUMA",
+          "status": "Done"
+        },
+        {
+          "id": 1792745388795,
+          "rawDate": "2026-10-20",
+          "hariTanggal": "Selasa, 20 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly Report Compared Marsma Week 42 , Create Gcell Marsma Mapping KML and KMZ and validate BCP site , class revenue",
+          "status": "Done"
+        },
+        {
+          "id": 1792745398531,
+          "rawDate": "2026-10-21",
+          "hariTanggal": "Rabu, 21 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly Report Compared Marsma Week 42 data site UME and REM Collect data Azimuth, territory, departemen and Coverage",
+          "status": "Done"
+        },
+        {
+          "id": 1792745409920,
+          "rawDate": "2026-10-22",
+          "hariTanggal": "Kamis, 22 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity daily report Collect data NDM payload and revenue , Created Marsma Week 43, validation UME Site marsma",
+          "status": "Done"
+        }
+      ]
+    },
+    "amin": {
+      "id": "amin",
+      "nama": "Amin Syahar Hasanuddin",
+      "jabatan": "OS1",
+      "divisi": "Service Quality Assurance PUMA Department",
+      "periode": "Oktober 2026",
+      "rows": [
+        {
+          "id": 1792745430111,
+          "rawDate": "2026-10-23",
+          "hariTanggal": "Jumat, 23 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "20:00",
+          "durasi": 2,
+          "deskripsi": "Productivity weekly report W41, update data payload Region, NOP and Kabupaten daily, updata data payload oss vs ndm, update payload traffic revenue site level RAN Cell Live , update growth Rnop",
+          "status": "Done"
+        },
+        {
+          "id": 1792745439867,
+          "rawDate": "2026-10-15",
+          "hariTanggal": "Kamis, 15 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "update data payload Region, NOP and Kabupaten daily, updata data payload oss vs ndm, update payload traffic revenue site level RAN Cell Live , update growth Rnop",
+          "status": "Done"
+        },
+        {
+          "id": 1792745450568,
+          "rawDate": "2026-10-16",
+          "hariTanggal": "Jumat, 16 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "update data payload Region, NOP and Kabupaten daily, updata data payload oss vs ndm, update payload traffic revenue site level RAN Cell Live , update growth Rnop",
+          "status": "Done"
+        },
+        {
+          "id": 1792745459598,
+          "rawDate": "2026-10-17",
+          "hariTanggal": "Sabtu, 17 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "productivity data payload revenue under timika updata data payload oss vs ndm, update payload traffic revenue site level RAN Cell Live , update growth Rnop",
+          "status": "Done"
+        },
+        {
+          "id": 1792745470445,
+          "rawDate": "2026-10-18",
+          "hariTanggal": "Minggu, 18 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity weekly report W42, productivity data payload revenue site level, updata data payload oss vs ndm, update payload traffic revenue site level RAN Cell Live , update growth Rnop",
+          "status": "Done"
+        },
+        {
+          "id": 1792745480357,
+          "rawDate": "2026-10-20",
+          "hariTanggal": "Selasa, 20 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "productivity data payload revenue site level, updata data payload oss vs ndm, update payload traffic revenue site level RAN Cell Live , update growth Rnop",
+          "status": "Done"
+        }
+      ]
+    },
+    "tiara": {
+      "id": "tiara",
+      "nama": "Tiara Syahrani Maulida",
+      "jabatan": "OS1",
+      "divisi": "Service Quality Assurance PUMA Department",
+      "periode": "Oktober 2026",
+      "rows": [
+        {
+          "id": 202,
+          "hariTanggal": "Senin, 5 Oktober 2026",
+          "rawDate": "2026-10-05",
+          "deskripsi": "Update and Submit data Tpas, Productivity Monitoring CRQ, Archive document, Broadcast tracking activity SQA, Update daily meeting SQA, Productivity daily Report Submit and broadcast data CCM Remedy.",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "status": "Done"
+        },
+        {
+          "id": 1792745514928,
+          "rawDate": "2026-10-18",
+          "hariTanggal": "Minggu, 18 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Update and Submit data Tpas, Productivity Monitoring CRQ, Archive document, Broadcast tracking activity SQA, Update daily meeting SQA, Productivity daily Report Submit and broadcast data CCM Remedy.",
+          "status": "Done"
+        },
+        {
+          "id": 1792745523895,
+          "rawDate": "2026-10-19",
+          "hariTanggal": "Senin, 19 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity daily Report Submit and broadcast data CCM, Update and Submit data Tpas, Productivity Monitoring CRQ, Broadcast tracking activity SQA, Update daily meeting SQA.",
+          "status": "Done"
+        },
+        {
+          "id": 1792745532186,
+          "rawDate": "2026-10-20",
+          "hariTanggal": "Selasa, 20 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Update and Submit data Tpas, Productivity Monitoring CRQ, Archive document, Broadcast tracking activity SQA, Update daily meeting SQA, Productivity daily Report Submit and broadcast data CCM Remedy.",
+          "status": "Done"
+        },
+        {
+          "id": 1792748287974,
+          "rawDate": "2026-10-23",
+          "hariTanggal": "Jumat, 23 Oktober 2026",
+          "jamMasuk": "18:00",
+          "jamPulang": "22:00",
+          "durasi": 4,
+          "deskripsi": "Productivity daily Report Submit and broadcast data CCM, Update and Submit data Tpas, Productivity Monitoring CRQ, Broadcast tracking activity SQA, Update daily meeting SQA.",
+          "status": "Done"
+        }
+      ]
+    }
+  }
+}

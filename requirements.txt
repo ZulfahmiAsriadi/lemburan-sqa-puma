@@ -1,0 +1,2 @@
+# Uses Python standard library (http.server, socketserver, json)
+# No external pip dependencies required
