@@ -356,15 +356,28 @@ function loadLocalData() {
   }
 }
 
+// State for locking background auto-sync during user edits
+let isSavingInProgress = false;
+
 // Save to LocalStorage and push to Server API
 async function saveData() {
+  isSavingInProgress = true;
   localStorage.setItem(STORAGE_KEY_MULTI, JSON.stringify(appData));
-  await pushToServer();
+  try {
+    await pushToServer();
+  } catch (err) {
+    console.error('Error in saveData:', err);
+  } finally {
+    isSavingInProgress = false;
+  }
+  renderActiveTab();
   updateAllTabBadges();
 }
 
 // Synchronize from Server
 async function syncFromServer() {
+  if (isSavingInProgress) return; // Do not overwrite in-progress edits
+
   const syncBadge = document.getElementById('online-sync-badge');
   const syncText = document.getElementById('sync-status-text');
 
@@ -414,8 +427,11 @@ async function syncFromServer() {
           }
         }
 
-        appData = serverData;
-        localStorage.setItem(STORAGE_KEY_MULTI, JSON.stringify(appData));
+        // Only update if not currently saving
+        if (!isSavingInProgress) {
+          appData = serverData;
+          localStorage.setItem(STORAGE_KEY_MULTI, JSON.stringify(appData));
+        }
       }
       isOnline = true;
       if (syncBadge) {
@@ -446,9 +462,15 @@ async function pushToServer() {
     });
     if (res.ok) {
       isOnline = true;
+      const syncBadge = document.getElementById('online-sync-badge');
+      const syncText = document.getElementById('sync-status-text');
+      if (syncBadge) {
+        syncBadge.querySelector('.status-dot').className = 'status-dot online';
+        syncText.textContent = 'Tersinkronisasi Online';
+      }
     }
   } catch (e) {
-    isOnline = false;
+    console.warn('Push error:', e);
   }
 }
 
