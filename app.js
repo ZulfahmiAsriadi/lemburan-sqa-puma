@@ -332,6 +332,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   initFormDateDefaults();
   setupNotificationUI();
+
+  // Restore role preference (default: staff)
+  const savedRole = localStorage.getItem('user_role_preference');
+  const btnStaff = document.getElementById('btn-mode-staff');
+  const btnAdmin = document.getElementById('btn-mode-admin');
+  const adminBar = document.getElementById('admin-quick-bar');
+  if (savedRole === 'admin') {
+    currentRole = 'admin';
+    if (btnAdmin) btnAdmin.classList.add('active');
+    if (btnStaff) btnStaff.classList.remove('active');
+    if (adminBar) adminBar.style.display = 'flex';
+  } else {
+    currentRole = 'staff';
+    if (btnStaff) btnStaff.classList.add('active');
+    if (btnAdmin) btnAdmin.classList.remove('active');
+    if (adminBar) adminBar.style.display = 'none';
+  }
+  updateStatusOptionsByRole();
   
   // Connect to server database
   await syncFromServer();
@@ -607,12 +625,13 @@ function renderActiveTab() {
     else countPending++;
 
     let statusHTML = '';
+    const statusTitle = (currentRole === 'admin') ? 'Klik untuk verifikasi status' : 'Status review lemburan';
     if (isDone) {
-      statusHTML = `<span class="status-pill status-done" onclick="toggleRowStatus(${row.id})" title="Klik untuk ubah status">Done</span>`;
+      statusHTML = `<span class="status-pill status-done" onclick="toggleRowStatus(${row.id})" title="${statusTitle}">Done</span>`;
     } else if (row.status) {
-      statusHTML = `<span class="status-pill status-pending" onclick="toggleRowStatus(${row.id})" title="Klik untuk ubah status">${escapeHTML(row.status)}</span>`;
+      statusHTML = `<span class="status-pill status-pending" onclick="toggleRowStatus(${row.id})" title="${statusTitle}">${escapeHTML(row.status)}</span>`;
     } else {
-      statusHTML = `<span class="status-pill status-empty" onclick="toggleRowStatus(${row.id})" title="Klik untuk ubah status">(Kosong)</span>`;
+      statusHTML = `<span class="status-pill status-empty" onclick="toggleRowStatus(${row.id})" title="${statusTitle}">Menunggu Review</span>`;
     }
 
     return `
@@ -625,7 +644,7 @@ function renderActiveTab() {
         <td class="text-center duration-cell">${durasi}</td>
         <td class="text-center">${statusHTML}</td>
         <td class="text-center cell-actions">
-          ${!isDone ? `
+          ${!isDone && currentRole === 'admin' ? `
             <button class="btn-cell-icon approve" title="Setujui (Tandai Done)" onclick="markRowDone(${row.id})">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -667,7 +686,7 @@ function renderActiveTab() {
         const isDone = (row.status && row.status.toLowerCase() === 'done');
         let statusBadge = isDone
           ? `<span class="status-pill status-done" onclick="toggleRowStatus(${row.id})">Done</span>`
-          : (row.status ? `<span class="status-pill status-pending" onclick="toggleRowStatus(${row.id})">${escapeHTML(row.status)}</span>` : `<span class="status-pill status-empty" onclick="toggleRowStatus(${row.id})">+ Isi Status</span>`);
+          : (row.status ? `<span class="status-pill status-pending" onclick="toggleRowStatus(${row.id})">${escapeHTML(row.status)}</span>` : `<span class="status-pill status-empty" onclick="toggleRowStatus(${row.id})">Menunggu Review</span>`);
 
         return `
           <div class="mobile-card-item">
@@ -695,14 +714,16 @@ function renderActiveTab() {
 
             <div class="mobile-card-actions">
               <div class="mobile-card-actions-left">
-                ${!isDone ? `
-                  <button class="btn-mobile-approve" onclick="markRowDone(${row.id})">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    Setujui (Done)
-                  </button>
-                ` : '<span style="font-size: 0.775rem; color: #10b981; font-weight: 700;">✓ Disetujui</span>'}
+                ${!isDone ? (
+                  currentRole === 'admin' ? `
+                    <button class="btn-mobile-approve" onclick="markRowDone(${row.id})">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      Setujui (Done)
+                    </button>
+                  ` : '<span style="font-size: 0.775rem; color: #f59e0b; font-weight: 600;">⏳ Menunggu Review</span>'
+                ) : '<span style="font-size: 0.775rem; color: #10b981; font-weight: 700;">✓ Disetujui</span>'}
               </div>
               <div style="display: flex; gap: 6px;">
                 <button class="btn-mobile-action" title="Edit" onclick="openEditModal(${row.id})">
@@ -961,6 +982,10 @@ function renderCombinedSummaryTimesheet() {
 // Status & Row Actions
 // ===================================================================
 async function toggleRowStatus(id) {
+  if (currentRole !== 'admin') {
+    showToast('Hanya Reviewer (Atasan) yang berwenang mengubah status lemburan.', 'info');
+    return;
+  }
   const currentAdmin = appData.admins[activeTab];
   if (!currentAdmin) return;
 
@@ -972,7 +997,7 @@ async function toggleRowStatus(id) {
     showToast(`Status baris di ${currentAdmin.nama} diubah ke "Done"`, 'success');
   } else {
     row.status = '';
-    showToast(`Status baris di ${currentAdmin.nama} dikosongkan`, 'info');
+    showToast(`Status baris di ${currentAdmin.nama} diset Menunggu Review`, 'info');
   }
 
   await saveData();
@@ -980,6 +1005,10 @@ async function toggleRowStatus(id) {
 }
 
 async function markRowDone(id) {
+  if (currentRole !== 'admin') {
+    showToast('Hanya Reviewer (Atasan) yang berwenang menyetujui status Done.', 'info');
+    return;
+  }
   const currentAdmin = appData.admins[activeTab];
   if (!currentAdmin) return;
 
@@ -993,6 +1022,10 @@ async function markRowDone(id) {
 }
 
 async function bulkApproveAll() {
+  if (currentRole !== 'admin') {
+    showToast('Hanya Reviewer (Atasan) yang dapat menyetujui semua lemburan.', 'info');
+    return;
+  }
   const currentAdmin = appData.admins[activeTab];
   if (!currentAdmin) return;
 
@@ -1093,6 +1126,35 @@ function updateLiveDuration() {
   document.getElementById('calc-durasi-display').textContent = `${durasi} Jam`;
 }
 
+// Atur pilihan status pekerjaan berdasarkan role (Staff vs Reviewer)
+function updateStatusOptionsByRole(currentStatusVal = '') {
+  const statusSelect = document.getElementById('input-status');
+  const hintEl = document.getElementById('status-field-hint') || document.querySelector('#status-field-wrapper .form-hint');
+  if (!statusSelect) return;
+
+  if (currentRole === 'staff') {
+    // Mode Staff / Pengisi: HANYA berikan akses (Kosong / Menunggu Review)
+    statusSelect.innerHTML = `<option value="">(Kosong / Menunggu Review)</option>`;
+    statusSelect.value = '';
+    statusSelect.disabled = true;
+    if (hintEl) {
+      hintEl.textContent = '🔒 Mode Pengisi: Status otomatis diset "(Kosong / Menunggu Review)" sampai disetujui Reviewer.';
+    }
+  } else {
+    // Mode Reviewer (Saya): Opsi lengkap (Kosong, Done, Pending)
+    statusSelect.disabled = false;
+    statusSelect.innerHTML = `
+      <option value="">(Kosong / Menunggu Review)</option>
+      <option value="Done">Done</option>
+      <option value="Pending">Pending</option>
+    `;
+    statusSelect.value = currentStatusVal || 'Done';
+    if (hintEl) {
+      hintEl.textContent = 'Mode Reviewer: Anda dapat menyetujui langsung sebagai Done atau menandai Pending.';
+    }
+  }
+}
+
 function openAddModal() {
   editingRowId = null;
   document.getElementById('modal-lembur-title').textContent = 'Input Catatan Lembur';
@@ -1115,7 +1177,9 @@ function openAddModal() {
   updateDatePreview(todayStr);
   document.getElementById('input-jam-masuk').value = '18:00';
   document.getElementById('input-jam-pulang').value = '22:00';
-  document.getElementById('input-status').value = (currentRole === 'admin') ? 'Done' : '';
+  
+  // Update status dropdown options strictly based on current role
+  updateStatusOptionsByRole(currentRole === 'admin' ? 'Done' : '');
 
   updateLiveDuration();
   document.getElementById('modal-lembur').style.display = 'flex';
@@ -1140,7 +1204,9 @@ function openEditModal(id) {
   document.getElementById('input-jam-masuk').value = row.jamMasuk || '18:00';
   document.getElementById('input-jam-pulang').value = row.jamPulang || '22:00';
   document.getElementById('input-deskripsi').value = row.deskripsi || '';
-  document.getElementById('input-status').value = row.status || '';
+  
+  // Update status dropdown options strictly based on current role
+  updateStatusOptionsByRole(row.status || '');
 
   updateLiveDuration();
   document.getElementById('modal-lembur').style.display = 'flex';
@@ -1162,7 +1228,21 @@ async function handleSaveLembur(e) {
   const jamMasuk = document.getElementById('input-jam-masuk').value;
   const jamPulang = document.getElementById('input-jam-pulang').value;
   const deskripsi = document.getElementById('input-deskripsi').value.trim();
-  const status = document.getElementById('input-status').value.trim();
+
+  // Tentukan status sesuai hak akses: Staff HANYA bisa kosong / menunggu review
+  let status = '';
+  if (currentRole === 'admin') {
+    const statusSelect = document.getElementById('input-status');
+    status = statusSelect ? statusSelect.value.trim() : '';
+  } else {
+    // Mode staff: jika mengedit baris yang sudah Done, pertahankan status Done
+    if (editingRowId) {
+      const existingRow = targetAdmin.rows.find(r => r.id === editingRowId);
+      status = (existingRow && existingRow.status === 'Done') ? 'Done' : '';
+    } else {
+      status = ''; // Entri baru dari staf selalu kosong / menunggu review
+    }
+  }
 
   const durasi = calculateDuration(jamMasuk, jamPulang);
   if (durasi <= 0) {
@@ -1388,18 +1468,24 @@ function setupEventListeners() {
 
   btnStaff.addEventListener('click', () => {
     currentRole = 'staff';
+    localStorage.setItem('user_role_preference', 'staff');
     btnStaff.classList.add('active');
     btnAdmin.classList.remove('active');
-    adminBar.style.display = 'none';
-    showToast('Beralih ke Mode Pengisi (Staff / Admin)', 'info');
+    if (adminBar) adminBar.style.display = 'none';
+    updateStatusOptionsByRole('');
+    renderActiveTab();
+    showToast('Beralih ke Mode Pengisi (Staff)', 'info');
   });
 
   btnAdmin.addEventListener('click', () => {
     currentRole = 'admin';
+    localStorage.setItem('user_role_preference', 'admin');
     btnAdmin.classList.add('active');
     btnStaff.classList.remove('active');
-    adminBar.style.display = 'flex';
-    showToast('Beralih ke Mode Reviewer (Anda sendiri yang verifikasi)', 'info');
+    if (adminBar) adminBar.style.display = 'flex';
+    updateStatusOptionsByRole('Done');
+    renderActiveTab();
+    showToast('Beralih ke Mode Reviewer (Saya)', 'info');
   });
 
   // Share Modal

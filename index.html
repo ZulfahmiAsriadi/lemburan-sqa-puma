@@ -560,15 +560,13 @@
           <textarea id="input-deskripsi" rows="4" placeholder="Contoh: Productivity weekly Report Compared Marsma Week 38 Compared data site UME and REM Collect data Azimuth and territory NDM..." required></textarea>
         </div>
 
-        <!-- Status Field: Default kosong/Pending untuk staff, atau bisa diset oleh atasan -->
+        <!-- Status Field: Default kosong/Menunggu Review untuk staff -->
         <div class="form-group" id="status-field-wrapper">
           <label for="input-status">Status Pekerjaan</label>
           <select id="input-status">
             <option value="">(Kosong / Menunggu Review)</option>
-            <option value="Done">Done</option>
-            <option value="Pending">Pending</option>
           </select>
-          <small class="form-hint">Jika diisi staf, biarkan kosong atau Pending sampai Anda mereviewnya.</small>
+          <small class="form-hint" id="status-field-hint">Status otomatis (Kosong / Menunggu Review) sampai disetujui Reviewer.</small>
         </div>
 
         <div class="modal-footer">
@@ -679,6 +677,6 @@
   <div id="toast-container" class="toast-container"></div>
 
   <!-- External Script Logic -->
-  <script src="app.js?v=8"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
