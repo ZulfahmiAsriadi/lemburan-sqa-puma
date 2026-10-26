@@ -1,5 +1,5 @@
 // Service Worker for SQA PUMA Overtime PWA / WebAPK with Notification Support
-const CACHE_NAME = 'sqa-puma-cache-v5';
+const CACHE_NAME = 'sqa-puma-cache-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
