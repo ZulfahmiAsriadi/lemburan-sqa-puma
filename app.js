@@ -333,8 +333,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initFormDateDefaults();
   setupNotificationUI();
 
-  // Restore role preference (default: staff)
-  const savedRole = localStorage.getItem('user_role_preference') || 'staff';
+  // Security default: Mode Reviewer hanya aktif jika terautentikasi dengan PIN 4884 di sesi ini
+  const isAuth = sessionStorage.getItem('reviewer_authenticated') === 'true';
+  const savedRole = (isAuth && localStorage.getItem('user_role_preference') === 'admin') ? 'admin' : 'staff';
   applyRoleMode(savedRole);
   
   // Connect to server database
@@ -1107,6 +1108,82 @@ window.closeConfirmResetModal = closeConfirmResetModal;
 window.executeResetTimesheet = executeResetTimesheet;
 
 // ===================================================================
+// Reviewer Security PIN Authentication (PIN: 4884)
+// ===================================================================
+const REVIEWER_PIN = '4884';
+
+function openPinModal() {
+  const modal = document.getElementById('modal-pin-auth');
+  const pinInput = document.getElementById('input-reviewer-pin');
+  const errorMsg = document.getElementById('pin-error-msg');
+  if (errorMsg) errorMsg.style.display = 'none';
+  if (pinInput) {
+    pinInput.value = '';
+    pinInput.type = 'password';
+    pinInput.classList.remove('pin-error-shake');
+  }
+  if (modal) modal.style.display = 'flex';
+  setTimeout(() => {
+    if (pinInput) pinInput.focus();
+  }, 100);
+}
+
+function closePinModal() {
+  const modal = document.getElementById('modal-pin-auth');
+  if (modal) modal.style.display = 'none';
+  const pinInput = document.getElementById('input-reviewer-pin');
+  if (pinInput) pinInput.value = '';
+}
+
+function togglePinVisibility() {
+  const pinInput = document.getElementById('input-reviewer-pin');
+  const eyeIcon = document.getElementById('icon-eye-pin');
+  if (!pinInput) return;
+  if (pinInput.type === 'password') {
+    pinInput.type = 'text';
+    if (eyeIcon) {
+      eyeIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+    }
+  } else {
+    pinInput.type = 'password';
+    if (eyeIcon) {
+      eyeIcon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+    }
+  }
+}
+
+function handlePinSubmit(e) {
+  if (e) e.preventDefault();
+  const pinInput = document.getElementById('input-reviewer-pin');
+  const errorMsg = document.getElementById('pin-error-msg');
+  const enteredPin = pinInput ? pinInput.value.trim() : '';
+
+  if (enteredPin === REVIEWER_PIN) {
+    sessionStorage.setItem('reviewer_authenticated', 'true');
+    localStorage.setItem('user_role_preference', 'admin');
+    applyRoleMode('admin');
+    closePinModal();
+    showToast('✅ PIN Benar. Selamat datang di Mode Reviewer!', 'success');
+  } else {
+    if (errorMsg) errorMsg.style.display = 'block';
+    if (pinInput) {
+      pinInput.classList.add('pin-error-shake');
+      pinInput.select();
+      setTimeout(() => pinInput.classList.remove('pin-error-shake'), 400);
+    }
+    if ('vibrate' in navigator) {
+      try { navigator.vibrate([100, 50, 100]); } catch (err) {}
+    }
+    showToast('❌ PIN Salah! Akses Reviewer ditolak.', 'danger');
+  }
+}
+
+window.openPinModal = openPinModal;
+window.closePinModal = closePinModal;
+window.togglePinVisibility = togglePinVisibility;
+window.handlePinSubmit = handlePinSubmit;
+
+// ===================================================================
 // Status & Row Actions
 // ===================================================================
 async function toggleRowStatus(id) {
@@ -1624,15 +1701,18 @@ function setupEventListeners() {
   const adminBar = document.getElementById('admin-quick-bar');
 
   btnStaff.addEventListener('click', () => {
+    sessionStorage.removeItem('reviewer_authenticated');
     localStorage.setItem('user_role_preference', 'staff');
     applyRoleMode('staff');
     showToast('Beralih ke Mode Pengisi (Staff)', 'info');
   });
 
   btnAdmin.addEventListener('click', () => {
-    localStorage.setItem('user_role_preference', 'admin');
-    applyRoleMode('admin');
-    showToast('Beralih ke Mode Reviewer (Saya)', 'info');
+    if (currentRole === 'admin' && sessionStorage.getItem('reviewer_authenticated') === 'true') {
+      showToast('Anda sudah berada di Mode Reviewer', 'info');
+      return;
+    }
+    openPinModal();
   });
 
   // Share Modal

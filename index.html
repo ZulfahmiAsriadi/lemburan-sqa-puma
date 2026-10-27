@@ -885,10 +885,76 @@
     </div>
   </div>
 
+  <!-- MODAL 5: PIN Akses Khusus Reviewer (PIN: 4884) -->
+  <div id="modal-pin-auth" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog" style="max-width: 410px;">
+      <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); flex-shrink: 0;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: #0f172a;">Akses Khusus Reviewer</h3>
+            <span style="font-size: 0.8rem; color: #64748b;">Service Quality Assurance PUMA</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closePinModal()">&times;</button>
+      </div>
+
+      <form id="form-pin-auth" class="modal-body" onsubmit="handlePinSubmit(event)">
+        <p style="color: #475569; font-size: 0.875rem; margin: 0 0 14px 0; line-height: 1.45;">
+          Masukkan 4 digit PIN keamanan untuk mengaktifkan <strong>Mode Reviewer (Atasan)</strong>:
+        </p>
+
+        <div class="form-group" style="margin-bottom: 10px;">
+          <div style="position: relative; display: flex; align-items: center;">
+            <input 
+              type="password" 
+              id="input-reviewer-pin" 
+              class="pin-input-field" 
+              placeholder="••••" 
+              maxlength="8" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              autocomplete="off" 
+              required
+              style="width: 100%; text-align: center; font-size: 1.8rem; letter-spacing: 0.35em; font-family: var(--font-mono); padding: 12px 40px 12px 16px; border: 2px solid #cbd5e1; border-radius: var(--radius-md); transition: var(--transition);"
+            >
+            <button 
+              type="button" 
+              id="btn-toggle-pin-visibility" 
+              onclick="togglePinVisibility()" 
+              style="position: absolute; right: 12px; background: transparent; border: none; cursor: pointer; color: #64748b; padding: 4px; display: flex; align-items: center;"
+              title="Lihat / Sembunyikan PIN"
+            >
+              <svg id="icon-eye-pin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div id="pin-error-msg" style="display: none; color: #ef4444; font-size: 0.825rem; font-weight: 700; margin-top: 8px; text-align: center;">
+            ❌ PIN Salah! Akses Reviewer Ditolak.
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 14px; margin-top: 8px;">
+          <button type="button" class="btn btn-secondary" onclick="closePinModal()">Batal</button>
+          <button type="submit" class="btn btn-primary" style="padding: 10px 18px; font-weight: 700;">
+            Masuk Reviewer &rarr;
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
   <!-- External Script Logic -->
-  <script src="app.js?v=10"></script>
+  <script src="app.js?v=11"></script>
 </body>
 </html>

@@ -2396,6 +2396,25 @@ body {
   box-shadow: 0 6px 18px rgba(220, 38, 38, 0.45);
 }
 
+/* PIN Shake Animation & Input Styling */
+.pin-input-field:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+  outline: none;
+}
+
+.pin-error-shake {
+  animation: pinShake 0.4s ease;
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+}
+
+@keyframes pinShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
 /* Print Media Styling */
 @media print {
   body {
