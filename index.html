@@ -192,6 +192,24 @@
           </div>
           <span class="tab-active-glow"></span>
         </button>
+
+        <!-- TAB 5: RESET ALL TIMESHEET (KHUSUS REVIEWER) -->
+        <button class="tab-btn tab-reset" data-admin="reset" id="tab-reset" role="tab" style="display: none;">
+          <div class="tab-avatar avatar-reset">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+          </div>
+          <div class="tab-text">
+            <div class="tab-title-line">
+              <span class="tab-title">Reset Timesheet</span>
+              <span class="badge-role" style="font-size: 0.65rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">Reviewer</span>
+            </div>
+            <span class="tab-sub" id="badge-tab-reset">Mulai Periode Baru</span>
+          </div>
+          <span class="tab-active-glow"></span>
+        </button>
       </div>
     </section>
 
@@ -490,6 +508,168 @@
       </div>
     </div>
 
+    <!-- VIEW 3: RESET ALL TIMESHEET (KHUSUS REVIEWER) -->
+    <div id="view-reset" class="sheet-card" style="display: none;">
+      <div class="reset-page-container">
+        <!-- Header Banner -->
+        <div class="reset-header-banner">
+          <div class="reset-header-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+          </div>
+          <div class="reset-header-text">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <h2>Reset & Kosongkan Timesheet Lemburan</h2>
+              <span class="badge-role" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 700;">Khusus Reviewer</span>
+            </div>
+            <p>Fitur ini digunakan saat pergantian periode lembur atau memulai bulan baru. Seluruh data baris lembur akan dikosongkan agar staf/pengisi dapat menginput timesheet lembur periode baru.</p>
+          </div>
+        </div>
+
+        <!-- Warning Alert Box -->
+        <div class="reset-alert-box">
+          <div class="alert-content" style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.5rem;">⚠️</span>
+            <div>
+              <strong>Perhatian Sebelum Melakukan Reset:</strong>
+              <p>Mereset timesheet akan mengosongkan seluruh catatan jam lembur staf yang dipilih. Disarankan untuk mendownload/export rekap Excel terlebih dahulu sebagai arsip cadangan (backup).</p>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-primary" onclick="exportSummaryExcel()" style="flex-shrink: 0;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download Backup Excel Dulu
+          </button>
+        </div>
+
+        <!-- Live Current Data Card Grid -->
+        <div class="reset-stats-grid">
+          <!-- Amin -->
+          <div class="reset-admin-card">
+            <div class="reset-card-header">
+              <div class="tab-avatar avatar-amin" style="width: 34px; height: 34px; font-size: 0.8rem;">AS</div>
+              <div>
+                <strong>Amin Syahar Hasanuddin</strong>
+                <span class="reset-admin-role">OS1 • SQA PUMA</span>
+              </div>
+            </div>
+            <div class="reset-card-body">
+              <div class="reset-stat-row">
+                <span>Catatan Saat Ini:</span>
+                <strong id="reset-stat-amin-rows">0 baris</strong>
+              </div>
+              <div class="reset-stat-row">
+                <span>Total Jam Lembur:</span>
+                <strong id="reset-stat-amin-hours" style="color: #2563eb;">0 Jam</strong>
+              </div>
+              <div class="reset-stat-row">
+                <span>Periode:</span>
+                <span id="reset-stat-amin-periode">Oktober 2026</span>
+              </div>
+            </div>
+            <div class="reset-card-footer">
+              <button class="btn btn-sm btn-secondary" onclick="confirmResetSpecific('amin')">
+                Reset Hanya Amin
+              </button>
+            </div>
+          </div>
+
+          <!-- Tiara -->
+          <div class="reset-admin-card">
+            <div class="reset-card-header">
+              <div class="tab-avatar avatar-tiara" style="width: 34px; height: 34px; font-size: 0.8rem;">TM</div>
+              <div>
+                <strong>Tiara Syahrani Maulida</strong>
+                <span class="reset-admin-role">OS1 • SQA PUMA</span>
+              </div>
+            </div>
+            <div class="reset-card-body">
+              <div class="reset-stat-row">
+                <span>Catatan Saat Ini:</span>
+                <strong id="reset-stat-tiara-rows">0 baris</strong>
+              </div>
+              <div class="reset-stat-row">
+                <span>Total Jam Lembur:</span>
+                <strong id="reset-stat-tiara-hours" style="color: #ec4899;">0 Jam</strong>
+              </div>
+              <div class="reset-stat-row">
+                <span>Periode:</span>
+                <span id="reset-stat-tiara-periode">Oktober 2026</span>
+              </div>
+            </div>
+            <div class="reset-card-footer">
+              <button class="btn btn-sm btn-secondary" onclick="confirmResetSpecific('tiara')">
+                Reset Hanya Tiara
+              </button>
+            </div>
+          </div>
+
+          <!-- Muhiddin -->
+          <div class="reset-admin-card">
+            <div class="reset-card-header">
+              <div class="tab-avatar avatar-muhiddin" style="width: 34px; height: 34px; font-size: 0.8rem;">MH</div>
+              <div>
+                <strong>Muhiddin</strong>
+                <span class="reset-admin-role">OS1 • SQA PUMA</span>
+              </div>
+            </div>
+            <div class="reset-card-body">
+              <div class="reset-stat-row">
+                <span>Catatan Saat Ini:</span>
+                <strong id="reset-stat-muhiddin-rows">0 baris</strong>
+              </div>
+              <div class="reset-stat-row">
+                <span>Total Jam Lembur:</span>
+                <strong id="reset-stat-muhiddin-hours" style="color: #10b981;">0 Jam</strong>
+              </div>
+              <div class="reset-stat-row">
+                <span>Periode:</span>
+                <span id="reset-stat-muhiddin-periode">Oktober 2026</span>
+              </div>
+            </div>
+            <div class="reset-card-footer">
+              <button class="btn btn-sm btn-secondary" onclick="confirmResetSpecific('muhiddin')">
+                Reset Hanya Muhiddin
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Reset Action Box -->
+        <div class="master-reset-card">
+          <div class="master-reset-left">
+            <h3>🔴 Reset Seluruh Timesheet (3 Admin Sekaligus)</h3>
+            <p>Kosongkan semua lembaran kerja (Amin, Tiara, Muhiddin) menjadi 0 baris & 0 jam agar seluruh staf dapat mulai mengisi lemburan periode baru dari awal.</p>
+            
+            <div class="reset-period-input-wrap">
+              <label for="input-new-period">Update Label Periode Baru (Opsional):</label>
+              <div style="display: flex; gap: 10px; align-items: center; max-width: 400px;">
+                <input type="text" id="input-new-period" placeholder="Contoh: November 2026" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: 600; width: 100%;">
+              </div>
+              <small class="form-hint">Jika diisi, bulan pada lembar kerja seluruh admin akan otomatis berganti ke periode baru ini.</small>
+            </div>
+          </div>
+
+          <div class="master-reset-right">
+            <button class="btn btn-danger-action" id="btn-trigger-reset-all" onclick="openResetAllConfirmModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+              RESET ALL TIMESHEET SEKARANG
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- Floating Action Button (FAB) for Mobile -->
@@ -673,10 +853,42 @@
     </div>
   </div>
 
+  <!-- MODAL 4: Konfirmasi Reset Timesheet (Reviewer Only) -->
+  <div id="modal-confirm-reset" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: #fee2e2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+            ⚠️
+          </div>
+          <div>
+            <h3 style="color: #991b1b; margin: 0; font-size: 1.15rem;">Konfirmasi Reset Timesheet</h3>
+            <span style="font-size: 0.8rem; color: #64748b;">Tindakan Eksklusif Reviewer SQA PUMA</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeConfirmResetModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="padding-top: 12px;">
+        <p id="reset-confirm-message" style="color: #334155; font-size: 0.95rem; line-height: 1.5; margin: 0;">
+          Apakah Anda yakin ingin mengosongkan seluruh catatan lembur? Data akan di-reset menjadi 0 jam agar staf dapat mengisi lemburan periode baru.
+        </p>
+        <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 14px; font-size: 0.825rem; color: #475569; line-height: 1.4;">
+          ℹ️ <strong>Tips:</strong> Data yang di-reset akan langsung tersimpan di cloud database 24 jam dan otomatis memperbarui tampilan di HP seluruh staf.
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #f1f5f9; padding-top: 14px;">
+        <button type="button" class="btn btn-secondary" onclick="closeConfirmResetModal()">Batal</button>
+        <button type="button" class="btn btn-danger-action" id="btn-execute-reset" onclick="executeResetTimesheet()">
+          Ya, Kosongkan & Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container"></div>
 
   <!-- External Script Logic -->
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

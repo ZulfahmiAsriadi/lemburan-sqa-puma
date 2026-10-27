@@ -334,22 +334,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupNotificationUI();
 
   // Restore role preference (default: staff)
-  const savedRole = localStorage.getItem('user_role_preference');
-  const btnStaff = document.getElementById('btn-mode-staff');
-  const btnAdmin = document.getElementById('btn-mode-admin');
-  const adminBar = document.getElementById('admin-quick-bar');
-  if (savedRole === 'admin') {
-    currentRole = 'admin';
-    if (btnAdmin) btnAdmin.classList.add('active');
-    if (btnStaff) btnStaff.classList.remove('active');
-    if (adminBar) adminBar.style.display = 'flex';
-  } else {
-    currentRole = 'staff';
-    if (btnStaff) btnStaff.classList.add('active');
-    if (btnAdmin) btnAdmin.classList.remove('active');
-    if (adminBar) adminBar.style.display = 'none';
-  }
-  updateStatusOptionsByRole();
+  const savedRole = localStorage.getItem('user_role_preference') || 'staff';
+  applyRoleMode(savedRole);
   
   // Connect to server database
   await syncFromServer();
@@ -497,6 +483,12 @@ async function pushToServer() {
 // ===================================================================
 function switchTab(tabKey) {
   if (!tabKey) return;
+  // Protect reset tab from staff access
+  if (tabKey === 'reset' && currentRole !== 'admin') {
+    showToast('Tab Reset Timesheet hanya tersedia untuk Mode Reviewer.', 'info');
+    tabKey = 'summary';
+  }
+
   activeTab = tabKey;
 
   // Persist active tab to localStorage so APK always remembers user's selection
@@ -519,13 +511,21 @@ function switchTab(tabKey) {
 
   const viewSingle = document.getElementById('view-single-admin');
   const viewSummary = document.getElementById('view-summary');
+  const viewReset = document.getElementById('view-reset');
 
-  if (tabKey === 'summary') {
+  if (tabKey === 'reset') {
     if (viewSingle) viewSingle.style.display = 'none';
+    if (viewSummary) viewSummary.style.display = 'none';
+    if (viewReset) viewReset.style.display = 'flex';
+    renderResetView();
+  } else if (tabKey === 'summary') {
+    if (viewSingle) viewSingle.style.display = 'none';
+    if (viewReset) viewReset.style.display = 'none';
     if (viewSummary) viewSummary.style.display = 'flex';
     renderSummaryView();
   } else {
     if (viewSummary) viewSummary.style.display = 'none';
+    if (viewReset) viewReset.style.display = 'none';
     if (viewSingle) viewSingle.style.display = 'flex';
     renderActiveTab();
   }
@@ -541,18 +541,21 @@ function switchTab(tabKey) {
 
 function updateAllTabBadges() {
   let grandHours = 0;
+  let totalAllRows = 0;
 
   ['amin', 'tiara', 'muhiddin'].forEach(key => {
     const adminObj = appData.admins[key];
     if (!adminObj) return;
 
     let adminTotal = 0;
-    (adminObj.rows || []).forEach(r => adminTotal += (Number(r.durasi) || 0));
+    const rowList = adminObj.rows || [];
+    rowList.forEach(r => adminTotal += (Number(r.durasi) || 0));
     grandHours += adminTotal;
+    totalAllRows += rowList.length;
 
     const badge = document.getElementById(`badge-tab-${key}`);
     if (badge) {
-      badge.textContent = `${adminTotal} Jam (${(adminObj.rows || []).length} baris)`;
+      badge.textContent = `${adminTotal} Jam (${rowList.length} baris)`;
     }
   });
 
@@ -560,12 +563,21 @@ function updateAllTabBadges() {
   if (summaryBadge) {
     summaryBadge.textContent = `Total: ${grandHours} Jam`;
   }
+
+  const resetBadge = document.getElementById('badge-tab-reset');
+  if (resetBadge) {
+    resetBadge.textContent = `${totalAllRows} Baris Aktif`;
+  }
 }
 
 // ===================================================================
 // Rendering Active Admin Sheet
 // ===================================================================
 function renderActiveTab() {
+  if (activeTab === 'reset') {
+    renderResetView();
+    return;
+  }
   if (activeTab === 'summary') {
     renderSummaryView();
     return;
@@ -979,6 +991,122 @@ function renderCombinedSummaryTimesheet() {
 }
 
 // ===================================================================
+// Reset View Rendering & Execution (Reviewer Exclusive)
+// ===================================================================
+function renderResetView() {
+  if (currentRole !== 'admin') {
+    switchTab('summary');
+    return;
+  }
+
+  ['amin', 'tiara', 'muhiddin'].forEach(key => {
+    const admin = appData.admins[key];
+    if (!admin) return;
+    const rows = admin.rows || [];
+    let hrs = 0;
+    rows.forEach(r => hrs += (Number(r.durasi) || 0));
+
+    const rowsEl = document.getElementById(`reset-stat-${key}-rows`);
+    const hoursEl = document.getElementById(`reset-stat-${key}-hours`);
+    const periodeEl = document.getElementById(`reset-stat-${key}-periode`);
+
+    if (rowsEl) rowsEl.textContent = `${rows.length} baris`;
+    if (hoursEl) hoursEl.textContent = `${hrs} Jam`;
+    if (periodeEl) periodeEl.textContent = admin.periode || '-';
+  });
+
+  const periodInput = document.getElementById('input-new-period');
+  if (periodInput && !periodInput.value) {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    periodInput.placeholder = `Contoh: ${months[nextMonth.getMonth()]} ${nextMonth.getFullYear()}`;
+  }
+}
+
+let pendingResetTarget = null; // 'all' | 'amin' | 'tiara' | 'muhiddin'
+
+function openResetAllConfirmModal() {
+  if (currentRole !== 'admin') {
+    showToast('Akses ditolak: Hanya Reviewer yang dapat mereset timesheet.', 'info');
+    return;
+  }
+  pendingResetTarget = 'all';
+  const msgEl = document.getElementById('reset-confirm-message');
+  if (msgEl) {
+    msgEl.innerHTML = '<strong>Yakin ingin mereset seluruh data lembur 3 admin?</strong><br>Semua baris lembur (Amin, Tiara, Muhiddin) akan dikosongkan (0 Jam) agar staf/pengisi dapat mengisi ulang timesheet periode baru.';
+  }
+  const modal = document.getElementById('modal-confirm-reset');
+  if (modal) modal.style.display = 'flex';
+}
+
+function confirmResetSpecific(adminKey) {
+  if (currentRole !== 'admin') {
+    showToast('Akses ditolak: Hanya Reviewer yang dapat mereset timesheet.', 'info');
+    return;
+  }
+  pendingResetTarget = adminKey;
+  const admin = appData.admins[adminKey];
+  const adminName = admin ? admin.nama : adminKey;
+  const msgEl = document.getElementById('reset-confirm-message');
+  if (msgEl) {
+    msgEl.innerHTML = `<strong>Yakin ingin mereset timesheet untuk ${escapeHTML(adminName)}?</strong><br>Baris lembur ${escapeHTML(adminName)} akan dikosongkan (0 Jam) agar staf dapat mengisi ulang.`;
+  }
+  const modal = document.getElementById('modal-confirm-reset');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closeConfirmResetModal() {
+  const modal = document.getElementById('modal-confirm-reset');
+  if (modal) modal.style.display = 'none';
+  pendingResetTarget = null;
+}
+
+async function executeResetTimesheet() {
+  if (currentRole !== 'admin') {
+    showToast('Akses ditolak: Hanya Reviewer yang dapat mereset timesheet.', 'info');
+    closeConfirmResetModal();
+    return;
+  }
+
+  const periodInput = document.getElementById('input-new-period');
+  const newPeriod = periodInput ? periodInput.value.trim() : '';
+
+  if (pendingResetTarget === 'all') {
+    ['amin', 'tiara', 'muhiddin'].forEach(k => {
+      if (appData.admins[k]) {
+        appData.admins[k].rows = [];
+        if (newPeriod) {
+          appData.admins[k].periode = newPeriod;
+        }
+      }
+    });
+    showToast('✅ Seluruh timesheet 3 admin berhasil di-reset menjadi kosong!', 'success');
+  } else if (pendingResetTarget && appData.admins[pendingResetTarget]) {
+    appData.admins[pendingResetTarget].rows = [];
+    if (newPeriod) {
+      appData.admins[pendingResetTarget].periode = newPeriod;
+    }
+    showToast(`✅ Timesheet ${appData.admins[pendingResetTarget].nama} berhasil di-reset menjadi kosong!`, 'success');
+  }
+
+  closeConfirmResetModal();
+
+  // Save to persistent cloud database (Gist)
+  await saveData();
+  updateAllTabBadges();
+  renderResetView();
+
+  if (periodInput) periodInput.value = '';
+}
+
+// Global exposure for modal onclick handlers
+window.openResetAllConfirmModal = openResetAllConfirmModal;
+window.confirmResetSpecific = confirmResetSpecific;
+window.closeConfirmResetModal = closeConfirmResetModal;
+window.executeResetTimesheet = executeResetTimesheet;
+
+// ===================================================================
 // Status & Row Actions
 // ===================================================================
 async function toggleRowStatus(id) {
@@ -1124,6 +1252,35 @@ function updateLiveDuration() {
   const jamPulang = document.getElementById('input-jam-pulang').value;
   const durasi = calculateDuration(jamMasuk, jamPulang);
   document.getElementById('calc-durasi-display').textContent = `${durasi} Jam`;
+}
+
+// Mengatur tampilan UI, hak akses, dan visibilitas tab reset berdasarkan role (Staff vs Reviewer)
+function applyRoleMode(role) {
+  currentRole = role;
+  const btnStaff = document.getElementById('btn-mode-staff');
+  const btnAdmin = document.getElementById('btn-mode-admin');
+  const adminBar = document.getElementById('admin-quick-bar');
+  const tabReset = document.getElementById('tab-reset');
+
+  if (currentRole === 'admin') {
+    if (btnAdmin) btnAdmin.classList.add('active');
+    if (btnStaff) btnStaff.classList.remove('active');
+    if (adminBar) adminBar.style.display = 'flex';
+    if (tabReset) tabReset.style.display = 'inline-flex';
+  } else {
+    if (btnStaff) btnStaff.classList.add('active');
+    if (btnAdmin) btnAdmin.classList.remove('active');
+    if (adminBar) adminBar.style.display = 'none';
+    if (tabReset) tabReset.style.display = 'none';
+
+    // Jika staf sedang membuka tab reset, kembalikan ke summary
+    if (activeTab === 'reset') {
+      switchTab('summary');
+    }
+  }
+
+  updateStatusOptionsByRole();
+  renderActiveTab();
 }
 
 // Atur pilihan status pekerjaan berdasarkan role (Staff vs Reviewer)
@@ -1467,24 +1624,14 @@ function setupEventListeners() {
   const adminBar = document.getElementById('admin-quick-bar');
 
   btnStaff.addEventListener('click', () => {
-    currentRole = 'staff';
     localStorage.setItem('user_role_preference', 'staff');
-    btnStaff.classList.add('active');
-    btnAdmin.classList.remove('active');
-    if (adminBar) adminBar.style.display = 'none';
-    updateStatusOptionsByRole('');
-    renderActiveTab();
+    applyRoleMode('staff');
     showToast('Beralih ke Mode Pengisi (Staff)', 'info');
   });
 
   btnAdmin.addEventListener('click', () => {
-    currentRole = 'admin';
     localStorage.setItem('user_role_preference', 'admin');
-    btnAdmin.classList.add('active');
-    btnStaff.classList.remove('active');
-    if (adminBar) adminBar.style.display = 'flex';
-    updateStatusOptionsByRole('Done');
-    renderActiveTab();
+    applyRoleMode('admin');
     showToast('Beralih ke Mode Reviewer (Saya)', 'info');
   });
 
