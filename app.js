@@ -1602,7 +1602,7 @@ function copyShareLink(inputId) {
 }
 
 // ===================================================================
-// Excel / CSV Export
+// Excel / Spreadsheet Export (.xls with Clean Styled Tables & Borders)
 // ===================================================================
 function exportToExcelCSV() {
   if (activeTab === 'summary') {
@@ -1614,66 +1614,295 @@ function exportToExcelCSV() {
   if (!currentAdmin) return;
 
   let totalJam = 0;
-  (currentAdmin.rows || []).forEach(r => totalJam += (Number(r.durasi) || 0));
+  let countDone = 0;
+  let countPending = 0;
+  const rows = currentAdmin.rows || [];
 
-  const lines = [
-    `"Nama";":";"${escapeCSV(currentAdmin.nama)}"`,
-    `"Jabatan";":";"${escapeCSV(currentAdmin.jabatan)}"`,
-    `"Divisi";":";"${escapeCSV(currentAdmin.divisi)}"`,
-    '',
-    `"Bulan/Tahun";":";"${escapeCSV(currentAdmin.periode)}"`,
-    '',
-    ['"No"', '"Hari/Tanggal/Bulan/Tahun"', '"Deskripsi Kerjaan"', '"Jam Masuk"', '"Jam Pulang"', '"Durasi"', '"status"'].join(';')
-  ];
-
-  (currentAdmin.rows || []).forEach((row, i) => {
-    lines.push([
-      i + 1,
-      `"${escapeCSV(row.hariTanggal)}"`,
-      `"${escapeCSV(row.deskripsi)}"`,
-      `"${row.jamMasuk}"`,
-      `"${row.jamPulang}"`,
-      row.durasi,
-      `"${escapeCSV(row.status || '')}"`
-    ].join(';'));
+  rows.forEach(r => {
+    totalJam += (Number(r.durasi) || 0);
+    if (r.status && r.status.toLowerCase() === 'done') countDone++;
+    else countPending++;
   });
 
-  lines.push(['"Total Jam"', '""', '""', '""', '""', totalJam, '""'].join(';'));
+  const rowsHtml = rows.map((row, i) => {
+    const isDone = (row.status && row.status.toLowerCase() === 'done');
+    const statusText = isDone ? 'Done' : (row.status || 'Menunggu Review');
+    const statusBg = isDone ? '#dcfce7' : '#fef3c7';
+    const statusColor = isDone ? '#15803d' : '#b45309';
+    const zebraBg = (i % 2 === 1) ? '#f8fafc' : '#ffffff';
 
-  downloadCSV(lines.join('\r\n'), `Rekap_Lembur_${currentAdmin.nama.replace(/\s+/g, '_')}.csv`);
+    return `
+      <tr>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; background-color: ${zebraBg};">${i + 1}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; background-color: ${zebraBg};">${escapeHTML(row.hariTanggal)}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; background-color: ${zebraBg};">${escapeHTML(row.deskripsi)}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; background-color: ${zebraBg}; mso-number-format:'\\@';">${escapeHTML(row.jamMasuk)}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; background-color: ${zebraBg}; mso-number-format:'\\@';">${escapeHTML(row.jamPulang)}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: bold; color: #1e40af; background-color: ${zebraBg};">${Number(row.durasi) || 0}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: bold; background-color: ${statusBg}; color: ${statusColor};">${escapeHTML(statusText)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const tableHtml = `
+    <table border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: Calibri, Arial, sans-serif; font-size: 11pt; width: 100%;">
+      <tr>
+        <td colspan="7" style="background-color: #1e1b4b; color: #ffffff; font-size: 14pt; font-weight: bold; text-align: center; padding: 12px; border: 1px solid #1e1b4b;">
+          TIMESHEET LEMBURAN ADMIN SQA PUMA
+        </td>
+      </tr>
+      <tr><td colspan="7" style="border: none; height: 8px;"></td></tr>
+      <tr>
+        <td colspan="2" style="font-weight: bold; background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 10px;">Nama Karyawan</td>
+        <td colspan="5" style="border: 1px solid #cbd5e1; padding: 6px 10px; font-weight: bold; color: #0f172a;">${escapeHTML(currentAdmin.nama)}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="font-weight: bold; background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 10px;">Jabatan</td>
+        <td colspan="5" style="border: 1px solid #cbd5e1; padding: 6px 10px;">${escapeHTML(currentAdmin.jabatan)}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="font-weight: bold; background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 10px;">Divisi / Departemen</td>
+        <td colspan="5" style="border: 1px solid #cbd5e1; padding: 6px 10px;">${escapeHTML(currentAdmin.divisi)}</td>
+      </tr>
+      <tr>
+        <td colspan="2" style="font-weight: bold; background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 10px;">Periode Bulan / Tahun</td>
+        <td colspan="5" style="border: 1px solid #cbd5e1; padding: 6px 10px; font-weight: bold; color: #4f46e5;">${escapeHTML(currentAdmin.periode)}</td>
+      </tr>
+      <tr><td colspan="7" style="border: none; height: 10px;"></td></tr>
+      <thead>
+        <tr>
+          <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 45px;">No</th>
+          <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: left; border: 1px solid #1e1b4b; padding: 9px; width: 190px;">Hari / Tanggal / Bulan / Tahun</th>
+          <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: left; border: 1px solid #1e1b4b; padding: 9px; width: 420px;">Deskripsi Kerjaan</th>
+          <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 95px;">Jam Masuk</th>
+          <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 95px;">Jam Pulang</th>
+          <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 90px;">Durasi (Jam)</th>
+          <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 120px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rowsHtml || `<tr><td colspan="7" style="text-align: center; padding: 16px; color: #64748b; border: 1px solid #cbd5e1;">Belum ada catatan lembur</td></tr>`}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5" style="background-color: #eef2ff; font-weight: bold; text-align: right; padding: 9px 12px; border: 1px solid #cbd5e1; color: #1e1b4b;">TOTAL JAM LEMBUR</td>
+          <td style="background-color: #eef2ff; font-weight: bold; text-align: center; padding: 9px; border: 1px solid #cbd5e1; color: #4f46e5; font-size: 12pt;">${totalJam}</td>
+          <td style="background-color: #eef2ff; font-weight: bold; text-align: center; padding: 9px; border: 1px solid #cbd5e1; color: #15803d; font-size: 9.5pt;">${countDone} Done / ${countPending} Pending</td>
+        </tr>
+      </tfoot>
+    </table>
+  `;
+
+  const safePeriod = (currentAdmin.periode || '').replace(/\s+/g, '_');
+  const safeName = currentAdmin.nama.replace(/\s+/g, '_');
+  downloadExcelFile(tableHtml, `Rekap_Lembur_${safeName}_${safePeriod}.xls`, `Timesheet ${currentAdmin.nama}`);
 }
 
 function exportSummaryExcel() {
-  const lines = [
-    '"REKAPITULASI LEMBUR GABUNGAN 3 ADMIN SQA PUMA"',
-    `"Periode";":";"${escapeCSV(appData.admins.muhiddin.periode)}"`,
-    '',
-    ['"No"', '"Nama Admin"', '"Jabatan"', '"Divisi"', '"Jumlah Baris"', '"Total Durasi (Jam)"'].join(';')
-  ];
+  const adminKeys = ['amin', 'tiara', 'muhiddin'];
+  const periodeLabel = (appData.admins.muhiddin && appData.admins.muhiddin.periode) || 'Oktober 2026';
 
   let grandHours = 0;
-  ['amin', 'tiara', 'muhiddin'].forEach((key, i) => {
+  let grandRows = 0;
+  let grandDone = 0;
+  let grandPending = 0;
+
+  // 1. Ringkasan 3 Admin Rows
+  const summaryRowsHtml = adminKeys.map((key, i) => {
     const a = appData.admins[key];
+    if (!a) return '';
+    const rList = a.rows || [];
     let total = 0;
-    (a.rows || []).forEach(r => total += (Number(r.durasi) || 0));
+    let doneCount = 0;
+    let pendingCount = 0;
+
+    rList.forEach(r => {
+      total += (Number(r.durasi) || 0);
+      if (r.status && r.status.toLowerCase() === 'done') doneCount++;
+      else pendingCount++;
+    });
+
     grandHours += total;
-    lines.push([
-      i + 1,
-      `"${escapeCSV(a.nama)}"`,
-      `"${escapeCSV(a.jabatan)}"`,
-      `"${escapeCSV(a.divisi)}"`,
-      (a.rows || []).length,
-      total
-    ].join(';'));
-  });
+    grandRows += rList.length;
+    grandDone += doneCount;
+    grandPending += pendingCount;
 
-  lines.push(['"TOTAL KESELURUHAN"', '""', '""', '""', '""', grandHours].join(';'));
+    const isAllDone = (doneCount === rList.length && rList.length > 0);
+    const statusText = isAllDone ? `${doneCount} Selesai (100%)` : `${doneCount} Done / ${pendingCount} Pending`;
+    const statusBg = isAllDone ? '#dcfce7' : '#fef3c7';
+    const statusColor = isAllDone ? '#15803d' : '#b45309';
+    const zebraBg = (i % 2 === 1) ? '#f8fafc' : '#ffffff';
 
-  downloadCSV(lines.join('\r\n'), 'Rekap_Gabungan_3_Admin.csv');
+    return `
+      <tr>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; background-color: ${zebraBg}; font-weight: bold;">${i + 1}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; font-weight: bold; color: #0f172a; background-color: ${zebraBg};">${escapeHTML(a.nama)}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; background-color: ${zebraBg};">${escapeHTML(a.jabatan)}</td>
+        <td colspan="2" style="border: 1px solid #cbd5e1; padding: 8px; background-color: ${zebraBg};">${escapeHTML(a.divisi)}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: bold; background-color: ${zebraBg};">${rList.length}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: bold; color: #4f46e5; font-size: 11.5pt; background-color: ${zebraBg};">${total}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center; font-weight: bold; background-color: ${statusBg}; color: ${statusColor};">${escapeHTML(statusText)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // 2. Detail Seluruh Baris Lembur per Admin
+  let detailCounter = 0;
+  const detailRowsHtml = adminKeys.map(key => {
+    const a = appData.admins[key];
+    if (!a) return '';
+    const rList = a.rows || [];
+    if (rList.length === 0) return '';
+
+    let adminSubHours = 0;
+    const itemRows = rList.map((row) => {
+      detailCounter++;
+      const dur = Number(row.durasi) || 0;
+      adminSubHours += dur;
+      const isDone = (row.status && row.status.toLowerCase() === 'done');
+      const statusText = isDone ? 'Done' : (row.status || 'Menunggu Review');
+      const statusBg = isDone ? '#dcfce7' : '#fef3c7';
+      const statusColor = isDone ? '#15803d' : '#b45309';
+      const zebraBg = (detailCounter % 2 === 1) ? '#ffffff' : '#f8fafc';
+
+      return `
+        <tr>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; text-align: center; background-color: ${zebraBg};">${detailCounter}</td>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; font-weight: bold; color: #1e293b; background-color: ${zebraBg};">${escapeHTML(a.nama)}</td>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; text-align: center; background-color: ${zebraBg};">${escapeHTML(a.jabatan)}</td>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; background-color: ${zebraBg};">${escapeHTML(row.hariTanggal)}</td>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; background-color: ${zebraBg};">${escapeHTML(row.deskripsi)}</td>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; text-align: center; background-color: ${zebraBg}; mso-number-format:'\\@';">${escapeHTML(row.jamMasuk)} - ${escapeHTML(row.jamPulang)}</td>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; text-align: center; font-weight: bold; color: #1e40af; background-color: ${zebraBg};">${dur}</td>
+          <td style="border: 1px solid #cbd5e1; padding: 7px; text-align: center; font-weight: bold; background-color: ${statusBg}; color: ${statusColor};">${escapeHTML(statusText)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    return `
+      ${itemRows}
+      <tr>
+        <td colspan="6" style="background-color: #f1f5f9; font-weight: bold; text-align: right; padding: 7px 12px; border: 1px solid #cbd5e1; color: #334155;">
+          Subtotal ${escapeHTML(a.nama)} (${rList.length} Hari Kerja)
+        </td>
+        <td style="background-color: #e0e7ff; font-weight: bold; text-align: center; padding: 7px; border: 1px solid #cbd5e1; color: #312e81;">
+          ${adminSubHours}
+        </td>
+        <td style="background-color: #f1f5f9; border: 1px solid #cbd5e1;"></td>
+      </tr>
+    `;
+  }).join('');
+
+  const fullExcelHtml = `
+    <table border="1" cellspacing="0" cellpadding="6" style="border-collapse: collapse; font-family: Calibri, Arial, sans-serif; font-size: 11pt; width: 100%;">
+      <!-- HEADER UTAMA -->
+      <tr>
+        <td colspan="8" style="background-color: #1e1b4b; color: #ffffff; font-size: 15pt; font-weight: bold; text-align: center; padding: 14px; border: 1px solid #1e1b4b;">
+          REKAPITULASI LEMBUR GABUNGAN 3 ADMIN SQA PUMA
+        </td>
+      </tr>
+      <tr>
+        <td colspan="8" style="background-color: #312e81; color: #e0e7ff; font-size: 11pt; font-weight: bold; text-align: center; padding: 7px; border: 1px solid #1e1b4b;">
+          Service Quality Assurance Maluku and Papua Department • Periode: ${escapeHTML(periodeLabel)}
+        </td>
+      </tr>
+      <tr><td colspan="8" style="border: none; height: 10px;"></td></tr>
+
+      <!-- BAGIAN 1: TABEL RINGKASAN PER ADMIN -->
+      <tr>
+        <td colspan="8" style="background-color: #e0e7ff; color: #1e1b4b; font-weight: bold; font-size: 11.5pt; padding: 8px 10px; border: 1px solid #cbd5e1;">
+          I. RINGKASAN AKUMULASI JAM LEMBUR PER ADMIN
+        </td>
+      </tr>
+      <tr>
+        <th style="background-color: #1e293b; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #0f172a; padding: 9px; width: 45px;">No</th>
+        <th style="background-color: #1e293b; color: #ffffff; font-weight: bold; text-align: left; border: 1px solid #0f172a; padding: 9px; width: 210px;">Nama Admin</th>
+        <th style="background-color: #1e293b; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #0f172a; padding: 9px; width: 75px;">Jabatan</th>
+        <th colspan="2" style="background-color: #1e293b; color: #ffffff; font-weight: bold; text-align: left; border: 1px solid #0f172a; padding: 9px;">Divisi / Departemen</th>
+        <th style="background-color: #1e293b; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #0f172a; padding: 9px; width: 110px;">Jumlah Baris</th>
+        <th style="background-color: #1e293b; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #0f172a; padding: 9px; width: 120px;">Total Durasi (Jam)</th>
+        <th style="background-color: #1e293b; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #0f172a; padding: 9px; width: 150px;">Status Verifikasi</th>
+      </tr>
+      ${summaryRowsHtml}
+      <tr>
+        <td colspan="5" style="background-color: #eef2ff; font-weight: bold; text-align: right; padding: 10px 14px; border: 1px solid #cbd5e1; color: #1e1b4b; font-size: 11.5pt;">
+          TOTAL KESELURUHAN (3 ADMIN SQA PUMA)
+        </td>
+        <td style="background-color: #eef2ff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; font-size: 11.5pt;">
+          ${grandRows} Baris
+        </td>
+        <td style="background-color: #4f46e5; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #312e81; color: #ffffff; font-size: 12.5pt;">
+          ${grandHours} Jam
+        </td>
+        <td style="background-color: #eef2ff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #cbd5e1; color: #15803d; font-size: 10pt;">
+          ${grandDone} Done / ${grandPending} Pending
+        </td>
+      </tr>
+
+      <tr><td colspan="8" style="border: none; height: 16px;"></td></tr>
+
+      <!-- BAGIAN 2: RINCIAN TIMESHEET GABUNGAN -->
+      <tr>
+        <td colspan="8" style="background-color: #e0e7ff; color: #1e1b4b; font-weight: bold; font-size: 11.5pt; padding: 8px 10px; border: 1px solid #cbd5e1;">
+          II. RINCIAN TIMESHEET PEKERJAAN LEMBUR SELURUH ADMIN
+        </td>
+      </tr>
+      <tr>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 45px;">No</th>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: left; border: 1px solid #1e1b4b; padding: 9px; width: 210px;">Nama Admin</th>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 75px;">Jabatan</th>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: left; border: 1px solid #1e1b4b; padding: 9px; width: 185px;">Hari / Tanggal</th>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: left; border: 1px solid #1e1b4b; padding: 9px; width: 390px;">Deskripsi Pekerjaan</th>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 110px;">Jam Lembur</th>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 120px;">Durasi (Jam)</th>
+        <th style="background-color: #312e81; color: #ffffff; font-weight: bold; text-align: center; border: 1px solid #1e1b4b; padding: 9px; width: 150px;">Status</th>
+      </tr>
+      ${detailRowsHtml || `<tr><td colspan="8" style="text-align: center; padding: 16px; color: #64748b; border: 1px solid #cbd5e1;">Belum ada rincian lembur</td></tr>`}
+      <tr>
+        <td colspan="6" style="background-color: #1e1b4b; color: #ffffff; font-weight: bold; text-align: right; padding: 10px 14px; border: 1px solid #0f172a; font-size: 11.5pt;">
+          GRAND TOTAL JAM LEMBUR KESELURUHAN
+        </td>
+        <td style="background-color: #4f46e5; color: #ffffff; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #312e81; font-size: 12.5pt;">
+          ${grandHours} Jam
+        </td>
+        <td style="background-color: #1e1b4b; color: #a7f3d0; font-weight: bold; text-align: center; padding: 10px; border: 1px solid #0f172a; font-size: 10pt;">
+          ${grandRows} Baris Total
+        </td>
+      </tr>
+    </table>
+  `;
+
+  const safePeriod = periodeLabel.replace(/\s+/g, '_');
+  downloadExcelFile(fullExcelHtml, `Rekap_Gabungan_3_Admin_${safePeriod}.xls`, 'Rekap Gabungan 3 Admin');
 }
 
-function downloadCSV(csvContent, filename) {
-  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+function downloadExcelFile(tableHtml, filename, sheetName = 'Rekap Lembur') {
+  const excelTemplate = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="UTF-8">
+      <!--[if gte mso 9]>
+      <xml>
+        <x:ExcelWorkbook>
+          <x:ExcelWorksheets>
+            <x:ExcelWorksheet>
+              <x:Name>${escapeHTML(sheetName)}</x:Name>
+              <x:WorksheetOptions>
+                <x:DisplayGridlines/>
+              </x:WorksheetOptions>
+            </x:ExcelWorksheet>
+          </x:ExcelWorksheets>
+        </x:ExcelWorkbook>
+      </xml>
+      <![endif]-->
+    </head>
+    <body>
+      ${tableHtml}
+    </body>
+    </html>
+  `.trim();
+
+  const blob = new Blob(['\uFEFF' + excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.setAttribute('href', url);
@@ -1681,7 +1910,8 @@ function downloadCSV(csvContent, filename) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  showToast('File lembur berhasil diexport ke Excel (CSV)!', 'success');
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  showToast('File Rekap Excel (.xls) rapi berhasil didownload!', 'success');
 }
 
 // ===================================================================
